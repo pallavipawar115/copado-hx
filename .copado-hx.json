@@ -1,0 +1,9 @@
+{
+  "cicdBaseUrl": "https://test-api.com",
+  "crtBaseUrl": "https://test-crt.com",
+  "aiBaseUrl": "https://copadogpt-api.robotic.copado.com",
+  "bearerToken": "abc123",
+  "pak": "",
+  "orgId": "",
+  "currentStory": ""
+}

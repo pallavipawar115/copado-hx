@@ -1,0 +1,39 @@
+{
+  "user-stories": [
+    {
+      "id": "US-1234",
+      "title": "Lead Scoring",
+      "status": "Ready"
+    }
+  ],
+
+  "environments": [
+    {
+      "id": "UAT",
+      "name": "User Acceptance Testing"
+    },
+    {
+      "id": "PROD",
+      "name": "Production"
+    }
+  ],
+
+  "job-executions": [
+    {
+      "id": "JOB-001",
+      "status": "completed"
+    },
+    {
+      "id": "JOB-002",
+      "status": "completed"
+    }
+  ],
+
+  "test-jobs": [
+    {
+      "id": "TEST-001",
+      "name": "Smoke Tests",
+      "status": "completed"
+    }
+  ]
+}
