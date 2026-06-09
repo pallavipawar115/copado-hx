@@ -9,16 +9,32 @@ authCmd
   .description('Login to Copado')
   .requiredOption('--url <url>', 'Copado API URL')
   .requiredOption('--token <token>', 'Bearer token')
-  .action((opts) => {
+  .action(async (opts) => {
 
-    setConfig({
-      cicdBaseUrl: opts.url,
-      bearerToken: opts.token
-    });
-
-    console.log('✅ Login successful');
+  setConfig({
+    cicdBaseUrl: opts.url,
+    bearerToken: opts.token
   });
 
+  await fetch(
+    'http://localhost:3000/session',
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+  loggedIn: true,
+  user: "Pallavi",
+  environment: "Sandbox",
+  lastAction: "Login Successful",
+  lastUpdated: new Date().toLocaleString()
+})
+    }
+  );
+
+  console.log('✅ Login successful');
+});
 authCmd
   .command('status')
   .description('Check login status')
@@ -34,12 +50,29 @@ authCmd
 authCmd
   .command('logout')
   .description('Logout')
-  .action(() => {
+  .action(async () => {
 
-    setConfig({
-      cicdBaseUrl: '',
-      bearerToken: ''
-    });
-
-    console.log('✅ Logged out');
+  setConfig({
+    cicdBaseUrl: '',
+    bearerToken: ''
   });
+
+  await fetch(
+    'http://localhost:3000/session',
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+  loggedIn: false,
+  user: "",
+  environment: "",
+  lastAction: "Logged Out",
+  lastUpdated: new Date().toLocaleString()
+})
+    }
+  );
+
+  console.log('✅ Logged out');
+});

@@ -1,12 +1,40 @@
 {
+  "session": {
+    "loggedIn": true,
+    "user": "Pallavi",
+    "environment": "Sandbox",
+    "lastAction": "Story Selected: US-1235",
+    "lastUpdated": "3/6/2026, 11:43:10 pm",
+    "currentStory": "US-1235",
+    "currentStoryTitle": "Loan Management",
+    "currentStoryStatus": "Testing"
+  },
+  "validation": {
+    "status": "✅ Validation Successful",
+    "coverage": 92,
+    "testsPassed": 24,
+    "risk": "LOW"
+  },
+  "current-story": {
+    "id": "US-1235"
+  },
   "user-stories": [
     {
       "id": "US-1234",
       "title": "Lead Scoring",
       "status": "Ready"
+    },
+    {
+      "id": "US-1235",
+      "title": "Loan Management",
+      "status": "Testing"
+    },
+    {
+      "id": "US-1236",
+      "title": "PDF Automation",
+      "status": "Deployed"
     }
   ],
-
   "environments": [
     {
       "id": "UAT",
@@ -17,7 +45,6 @@
       "name": "Production"
     }
   ],
-
   "job-executions": [
     {
       "id": "JOB-001",
@@ -28,12 +55,17 @@
       "status": "completed"
     }
   ],
-
   "test-jobs": [
     {
       "id": "TEST-001",
       "name": "Smoke Tests",
       "status": "completed"
+    },
+    {
+      "id": "TEST-002",
+      "name": "Regression Suite",
+      "status": "running"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

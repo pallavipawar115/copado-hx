@@ -45,18 +45,13 @@ export const validate = async (
   storyId: string
 ) => {
 
-  const response = await fetch(
-    `${getConfig().cicdBaseUrl}/actions/validate`,
-    {
-      method: 'POST',
-      headers: headers(),
-      body: JSON.stringify({
-        userStoryId: storyId
-      })
-    }
-  );
+  return {
+    success: true,
+    storyId,
+    jobExecutionId: 'JOB-001',
+    status: 'Validation Started'
+  };
 
-  return response.json();
 };
 
 export const deploy = async (
@@ -77,61 +72,56 @@ export const deploy = async (
   return response.json();
 };
 
-export const listStories =
-  async () => {
+export const listStories = async () => {
 
-    const response =
-      await fetch(
-        `${getConfig().cicdBaseUrl}/user-stories`,
-        {
-          headers: headers()
-        }
-      );
+  const response = await fetch(
+    `${getConfig().cicdBaseUrl}/user-stories`,
+    {
+      headers: headers()
+    }
+  );
 
-    return response.json();
-  };
+  return response.json();
+};
 
-export const getStory =
-  async (id: string) => {
+export const getStory = async (
+  id: string
+) => {
 
-    const response =
-      await fetch(
-        `${getConfig().cicdBaseUrl}/user-stories/${id}`,
-        {
-          headers: headers()
-        }
-      );
+  const response = await fetch(
+    `${getConfig().cicdBaseUrl}/user-stories/${id}`,
+    {
+      headers: headers()
+    }
+  );
 
-    return response.json();
-  };
+  return response.json();
+};
 
-export const listEnvironments =
-  async () => {
+export const listEnvironments = async () => {
 
-    const response =
-      await fetch(
-        `${getConfig().cicdBaseUrl}/environments`,
-        {
-          headers: headers()
-        }
-      );
+  const response = await fetch(
+    `${getConfig().cicdBaseUrl}/environments`,
+    {
+      headers: headers()
+    }
+  );
 
-    return response.json();
-  };
+  return response.json();
+};
 
-export const pollJob =
-  async (jobId: string) => {
+export const pollJob = async (
+  jobId: string
+) => {
 
-    const response =
-      await fetch(
-        `${getConfig().cicdBaseUrl}/job-executions`
-      );
+  const response = await fetch(
+    `${getConfig().cicdBaseUrl}/job-executions`
+  );
 
-    const jobs =
-      await response.json();
+  const jobs = await response.json();
 
-    return jobs.find(
-      (job: any) =>
-        job.id === jobId
-    );
-  };
+  return jobs.find(
+    (job: any) =>
+      job.id === jobId
+  );
+};

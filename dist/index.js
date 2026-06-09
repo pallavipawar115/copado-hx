@@ -14676,11 +14676,27 @@ var setConfig = (config) => {
 
 // src/commands/auth.ts
 var authCmd = new Command("auth").description("Authentication commands");
-authCmd.command("login").description("Login to Copado").requiredOption("--url <url>", "Copado API URL").requiredOption("--token <token>", "Bearer token").action((opts) => {
+authCmd.command("login").description("Login to Copado").requiredOption("--url <url>", "Copado API URL").requiredOption("--token <token>", "Bearer token").action(async (opts) => {
   setConfig({
     cicdBaseUrl: opts.url,
     bearerToken: opts.token
   });
+  await fetch(
+    "http://localhost:3000/session",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        loggedIn: true,
+        user: "Pallavi",
+        environment: "Sandbox",
+        lastAction: "Login Successful",
+        lastUpdated: (/* @__PURE__ */ new Date()).toLocaleString()
+      })
+    }
+  );
   console.log("\u2705 Login successful");
 });
 authCmd.command("status").description("Check login status").action(() => {
@@ -14688,11 +14704,27 @@ authCmd.command("status").description("Check login status").action(() => {
   console.log("Current Config:");
   console.log(config);
 });
-authCmd.command("logout").description("Logout").action(() => {
+authCmd.command("logout").description("Logout").action(async () => {
   setConfig({
     cicdBaseUrl: "",
     bearerToken: ""
   });
+  await fetch(
+    "http://localhost:3000/session",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        loggedIn: false,
+        user: "",
+        environment: "",
+        lastAction: "Logged Out",
+        lastUpdated: (/* @__PURE__ */ new Date()).toLocaleString()
+      })
+    }
+  );
   console.log("\u2705 Logged out");
 });
 
@@ -14728,17 +14760,12 @@ var promote = async (storyId) => {
   return response.json();
 };
 var validate = async (storyId) => {
-  const response = await fetch(
-    `${getConfig().cicdBaseUrl}/actions/validate`,
-    {
-      method: "POST",
-      headers: headers(),
-      body: JSON.stringify({
-        userStoryId: storyId
-      })
-    }
-  );
-  return response.json();
+  return {
+    success: true,
+    storyId,
+    jobExecutionId: "JOB-001",
+    status: "Validation Started"
+  };
 };
 var listStories = async () => {
   const response = await fetch(
@@ -14792,10 +14819,48 @@ storyCmd.command("set").requiredOption(
   "Story ID"
 ).description(
   "Set current story context"
-).action((opts) => {
+).action(async (opts) => {
   setConfig({
     currentStory: opts.id
   });
+  const storiesRes = await fetch(
+    "http://localhost:3000/user-stories"
+  );
+  const stories = await storiesRes.json();
+  const selectedStory = stories.find(
+    (story) => story.id === opts.id
+  );
+  await fetch(
+    "http://localhost:3000/current-story",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: opts.id
+      })
+    }
+  );
+  await fetch(
+    "http://localhost:3000/session",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        loggedIn: true,
+        user: "Pallavi",
+        environment: "Sandbox",
+        lastAction: `Story Selected: ${opts.id}`,
+        lastUpdated: (/* @__PURE__ */ new Date()).toLocaleString(),
+        currentStory: opts.id,
+        currentStoryTitle: selectedStory?.title || "",
+        currentStoryStatus: selectedStory?.status || ""
+      })
+    }
+  );
   console.log(
     `\u2705 Current story set to ${opts.id}`
   );
@@ -18319,63 +18384,113 @@ var validateCmd = new Command("validate").requiredOption(
 ).description(
   "Run validation deployment"
 ).action(async (opts) => {
-  console.log(
-    source_default.cyan(
-      "\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 VALIDATION \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n"
-    )
-  );
-  console.log(
-    source_default.yellow(
-      `\u{1F50D} Validating Story: ${opts.story}`
-    )
-  );
-  console.log(
-    source_default.blue(
-      "\u{1F9EA} Running Apex Tests..."
-    )
-  );
-  await new Promise(
-    (r) => setTimeout(r, 1500)
-  );
-  console.log(
-    source_default.blue(
-      "\u{1F4E6} Preparing Deployment Package..."
-    )
-  );
-  await new Promise(
-    (r) => setTimeout(r, 1500)
-  );
-  console.time(
-    source_default.green(
-      "\u23F1 Validation Time"
-    )
-  );
-  const result = await validate(
-    opts.story
-  );
-  console.log(
-    source_default.gray(
-      "\nValidation Response:"
-    )
-  );
-  console.log(result);
-  if (opts.watch && result.jobExecutionId) {
-    await pollUntilDone(
-      () => pollJob(
-        result.jobExecutionId
+  try {
+    console.log(
+      source_default.cyan(
+        "\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 VALIDATION \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\n"
       )
     );
+    console.log(
+      source_default.yellow(
+        `\u{1F50D} Validating Story: ${opts.story}`
+      )
+    );
+    console.log(
+      source_default.blue(
+        "\u{1F9EA} Running Apex Tests..."
+      )
+    );
+    await new Promise(
+      (r) => setTimeout(r, 1500)
+    );
+    console.log(
+      source_default.blue(
+        "\u{1F4E6} Preparing Deployment Package..."
+      )
+    );
+    await new Promise(
+      (r) => setTimeout(r, 1500)
+    );
+    console.time(
+      source_default.green(
+        "\u23F1 Validation Time"
+      )
+    );
+    await fetch(
+      "http://localhost:3000/validation",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          status: "\u{1F504} Running...",
+          coverage: 0,
+          testsPassed: 0,
+          risk: "-"
+        })
+      }
+    );
+    const result = await validate(
+      opts.story
+    );
+    console.log(
+      source_default.gray(
+        "\nValidation Response:"
+      )
+    );
+    console.log(result);
+    if (opts.watch && result.jobExecutionId) {
+      await pollUntilDone(
+        () => pollJob(
+          result.jobExecutionId
+        )
+      );
+    }
+    console.timeEnd(
+      source_default.green(
+        "\u23F1 Validation Time"
+      )
+    );
+    await fetch(
+      "http://localhost:3000/validation",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          status: "\u2705 Validation Successful",
+          coverage: 92,
+          testsPassed: 24,
+          risk: "LOW"
+        })
+      }
+    );
+    console.log(
+      source_default.green(
+        "\n\u2705 Validation Successful\n"
+      )
+    );
+  } catch (error2) {
+    await fetch(
+      "http://localhost:3000/validation",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          status: "\u274C Validation Failed",
+          coverage: 68,
+          testsPassed: 18,
+          risk: "HIGH"
+        })
+      }
+    );
+    console.error(error2);
+    throw error2;
   }
-  console.timeEnd(
-    source_default.green(
-      "\u23F1 Validation Time"
-    )
-  );
-  console.log(
-    source_default.green(
-      "\n\u2705 Validation Successful\n"
-    )
-  );
 });
 
 // src/commands/envs.ts

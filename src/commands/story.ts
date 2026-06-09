@@ -54,18 +54,74 @@ storyCmd
     'Set current story context'
   )
 
-  .action((opts: any) => {
+  .action(async (opts: any) => {
 
-    setConfig({
-      currentStory:
-        opts.id
-    });
-
-    console.log(
-      `✅ Current story set to ${opts.id}`
-    );
+  setConfig({
+    currentStory: opts.id
   });
 
+  const storiesRes =
+  await fetch(
+    "http://localhost:3000/user-stories"
+  );
+
+const stories =
+  await storiesRes.json();
+
+const selectedStory =
+  stories.find(
+    (story: any) =>
+      story.id === opts.id
+  );
+
+await fetch(
+  "http://localhost:3000/current-story",
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      id: opts.id
+    })
+  }
+);
+
+await fetch(
+  "http://localhost:3000/session",
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      loggedIn: true,
+      user: "Pallavi",
+      environment: "Sandbox",
+
+      lastAction:
+        `Story Selected: ${opts.id}`,
+
+      lastUpdated:
+        new Date()
+          .toLocaleString(),
+
+      currentStory:
+        opts.id,
+
+      currentStoryTitle:
+        selectedStory?.title || "",
+
+      currentStoryStatus:
+        selectedStory?.status || ""
+    })
+  }
+);
+
+  console.log(
+    `✅ Current story set to ${opts.id}`
+  );
+});
 
 // --------------------------------
 // story show
